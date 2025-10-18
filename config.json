@@ -1,0 +1,11 @@
+{
+  "weights": {
+    "mobile_money": 0.3,
+    "electricity": 0.25,
+    "internet": 0.2,
+    "satellite": 0.15,
+    "social_media": 0.1
+  },
+  "alert_threshold": 80,
+  "update_interval": 60
+}
