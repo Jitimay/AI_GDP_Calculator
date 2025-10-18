@@ -7,8 +7,7 @@ __pycache__/
 venv/
 env/
 
-# Data files
-*.csv
+# Generated data files (keep sample data)
 *.db
 *.pkl
 *.log
