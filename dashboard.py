@@ -43,7 +43,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # API base URL
-API_BASE = "http://localhost:5001"
+API_BASE = "http://localhost:5000"
 
 def fetch_dashboard_data():
     """Fetch data from API"""
@@ -181,8 +181,17 @@ def main():
     data = fetch_dashboard_data()
     
     if data and data.get('status') == 'success':
-        current_data = data['current']
-        historical_data = data.get('historical', {})
+        # Handle different response formats
+        if 'current' in data:
+            current_data = data['current']
+        else:
+            # Fallback format
+            current_data = {
+                'national_index': data.get('national_index', 0),
+                'provincial_data': data.get('provincial_data', {})
+            }
+        
+        historical_data = data.get('historical', data.get('historical_data', {}))
         alerts = data.get('alerts', [])
         
         # Main metrics row
@@ -211,10 +220,11 @@ def main():
         if alerts:
             st.markdown("### 🚨 Active Alerts")
             for alert in alerts:
+                index_val = alert.get('gdp_index', alert.get('index_value', 0))
                 st.markdown(f"""
                 <div class="alert-box">
                     <strong>{alert['province']}</strong>: High activity detected 
-                    (Index: {alert['index_value']:.1f})
+                    (Index: {index_val:.1f})
                 </div>
                 """, unsafe_allow_html=True)
         
@@ -280,7 +290,7 @@ def main():
             st.rerun()
             
     else:
-        st.error("Unable to fetch data. Please ensure the API server is running on localhost:5001")
+        st.error("Unable to fetch data. Please ensure the API server is running on localhost:5000")
         st.info("Run: `python api.py` to start the backend server")
 
 if __name__ == "__main__":
