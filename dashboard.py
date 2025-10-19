@@ -43,7 +43,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # API base URL
-API_BASE = "http://localhost:5000"
+API_BASE = "http://localhost:5001"
 
 def fetch_dashboard_data():
     """Fetch data from API"""
@@ -170,14 +170,14 @@ def main():
     st.markdown('<div style="text-align: center; color: #666; margin-bottom: 2rem;">Real-time Economic Pulse of Burundi</div>', 
                 unsafe_allow_html=True)
     
-    # Auto-refresh
-    if st.sidebar.button("🔄 Refresh Data"):
+    # Real-time auto-refresh controls
+    auto_refresh = st.sidebar.checkbox("🔄 Real-time refresh", value=False)
+    refresh_interval = st.sidebar.selectbox("Refresh interval", [1, 2, 5, 10], index=1)
+    
+    if st.sidebar.button("🔄 Refresh Now"):
         st.rerun()
     
-    # Auto-refresh every 30 seconds
-    placeholder = st.empty()
-    
-    # Fetch data
+    # Fetch data first
     data = fetch_dashboard_data()
     
     if data and data.get('status') == 'success':
@@ -275,8 +275,13 @@ def main():
         st.markdown(f"Last updated: {data['timestamp']}")
         
     else:
-        st.error("Unable to fetch data. Please ensure the API server is running on localhost:5000")
+        st.error("Unable to fetch data. Please ensure the API server is running on localhost:5001")
         st.info("Run: `python api.py` to start the backend server")
+
+    # Auto-refresh at the end
+    if auto_refresh:
+        time.sleep(refresh_interval)
+        st.rerun()
 
 if __name__ == "__main__":
     main()

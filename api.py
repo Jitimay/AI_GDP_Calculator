@@ -7,7 +7,6 @@ from fusion_engine import FusionEngine
 from data_ingestion import DataIngestion
 from data_preprocessing import DataPreprocessor
 from ml_model import GDPPredictor
-
 app = Flask(__name__)
 CORS(app)
 
@@ -16,6 +15,16 @@ fusion_engine = FusionEngine()
 data_ingestion = DataIngestion()
 preprocessor = DataPreprocessor()
 gdp_predictor = GDPPredictor()
+
+# Initialize Elasticsearch client (optional)
+es_client = None
+try:
+    from es_client import SimpleElasticsearchClient
+    es_client = SimpleElasticsearchClient()
+    print("✅ Elasticsearch client initialized")
+except Exception as e:
+    print(f"⚠️  Elasticsearch not available: {e}")
+    print("   API will work without Elasticsearch")
 
 # Initialize database
 def init_db():
@@ -77,8 +86,12 @@ def predict():
         # Calculate national index
         national_index = fusion_engine.calculate_national_index(provincial_results)
         
-        # Save to database
+        # Save to database (SQLite backup)
         save_to_db(provincial_results)
+        
+        # Save to Elasticsearch (if available)
+        if es_client:
+            es_client.save_gdp_data(provincial_results, national_index)
         
         response = {
             'timestamp': datetime.now().isoformat(),
@@ -185,11 +198,50 @@ def train_model():
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
+    es_health = {"status": "not_available"}
+    if es_client:
+        es_health = es_client.health_check()
+    
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'version': '1.0.0'
+        'version': '1.0.0',
+        'elasticsearch': es_health
     })
+
+@app.route('/search/trends/<province>')
+def search_province_trends(province):
+    """Search province trends using Elasticsearch"""
+    if not es_client:
+        return jsonify({'error': 'Elasticsearch not available', 'status': 'error'}), 503
+    
+    hours = request.args.get('hours', 24, type=int)
+    try:
+        results = es_client.get_province_trends(province, hours)
+        return jsonify({
+            'province': province,
+            'trends': results['aggregations']['gdp_over_time']['buckets'],
+            'status': 'success'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'status': 'error'}), 500
+
+@app.route('/search/recent')
+def search_recent_data():
+    """Get recent data using Elasticsearch"""
+    if not es_client:
+        return jsonify({'error': 'Elasticsearch not available', 'status': 'error'}), 503
+    
+    hours = request.args.get('hours', 24, type=int)
+    try:
+        data = es_client.get_recent_data(hours)
+        return jsonify({
+            'data': data,
+            'count': len(data),
+            'status': 'success'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'status': 'error'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
