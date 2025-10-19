@@ -171,8 +171,8 @@ def main():
                 unsafe_allow_html=True)
     
     # Real-time auto-refresh controls
-    auto_refresh = st.sidebar.checkbox("🔄 Real-time refresh", value=False)
-    refresh_interval = st.sidebar.selectbox("Refresh interval", [1, 2, 5, 10], index=1)
+    auto_refresh = st.sidebar.checkbox("🔄 Real-time refresh", value=True)
+    refresh_interval = st.sidebar.selectbox("Refresh interval", [2, 3, 5, 10], index=0)
     
     if st.sidebar.button("🔄 Refresh Now"):
         st.rerun()
@@ -274,14 +274,14 @@ def main():
         st.markdown("---")
         st.markdown(f"Last updated: {data['timestamp']}")
         
+        # Auto-refresh only after successful data display
+        if auto_refresh:
+            time.sleep(refresh_interval)
+            st.rerun()
+            
     else:
         st.error("Unable to fetch data. Please ensure the API server is running on localhost:5001")
         st.info("Run: `python api.py` to start the backend server")
-
-    # Auto-refresh at the end
-    if auto_refresh:
-        time.sleep(refresh_interval)
-        st.rerun()
 
 if __name__ == "__main__":
     main()
