@@ -6,16 +6,17 @@ import os
 class DataIngestion:
     def __init__(self):
         self.provinces = ['Bujumbura', 'Gitega', 'Ngozi', 'Kayanza', 'Bururi', 'Cibitoke']
+        self.data_dir = 'data'  # Relative to project root
     
     def generate_sample_data(self):
         """Generate sample datasets if they don't exist"""
-        if not os.path.exists('mobile_money.csv'):
+        if not os.path.exists(f'{self.data_dir}/mobile_money.csv'):
             self._create_mobile_money_data()
-        if not os.path.exists('electricity.csv'):
+        if not os.path.exists(f'{self.data_dir}/electricity.csv'):
             self._create_electricity_data()
-        if not os.path.exists('internet_usage.csv'):
+        if not os.path.exists(f'{self.data_dir}/internet_usage.csv'):
             self._create_internet_data()
-        if not os.path.exists('social_signals.csv'):
+        if not os.path.exists(f'{self.data_dir}/social_signals.csv'):
             self._create_social_data()
     
     def _create_mobile_money_data(self):
@@ -76,14 +77,39 @@ class DataIngestion:
         pd.DataFrame(data).to_csv('social_signals.csv', index=False)
     
     def load_data(self):
-        """Load all data sources"""
-        self.generate_sample_data()
-        return {
-            'mobile_money': pd.read_csv('mobile_money.csv'),
-            'electricity': pd.read_csv('electricity.csv'),
-            'internet': pd.read_csv('internet_usage.csv'),
-            'social': pd.read_csv('social_signals.csv')
+        """Load all data sources - prioritize massive data if available"""
+        # Check for massive data files first
+        massive_files = {
+            'mobile_money': f'{self.data_dir}/mobile_money_massive.csv',
+            'electricity': f'{self.data_dir}/electricity_massive.csv',
+            'internet': f'{self.data_dir}/internet_massive.csv',
+            'social': f'{self.data_dir}/social_massive.csv'
         }
+        
+        regular_files = {
+            'mobile_money': f'{self.data_dir}/mobile_money.csv',
+            'electricity': f'{self.data_dir}/electricity.csv',
+            'internet': f'{self.data_dir}/internet_usage.csv',
+            'social': f'{self.data_dir}/social_signals.csv'
+        }
+        
+        data = {}
+        
+        for key in massive_files:
+            if os.path.exists(massive_files[key]):
+                print(f"📊 Loading MASSIVE {key} data...")
+                df = pd.read_csv(massive_files[key])
+                data[key] = df.tail(1000)  # Use last 1000 records for performance
+            elif os.path.exists(regular_files[key]):
+                print(f"📊 Loading regular {key} data...")
+                data[key] = pd.read_csv(regular_files[key])
+            else:
+                print(f"⚠️ No data file found for {key}, generating sample...")
+                self.generate_sample_data()
+                if os.path.exists(regular_files[key]):
+                    data[key] = pd.read_csv(regular_files[key])
+        
+        return data
     
     def simulate_realtime_data(self):
         """Generate new data point for current timestamp"""

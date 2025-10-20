@@ -11,7 +11,7 @@ This is a fully functional AI platform that estimates and visualizes the real-ti
 - **✅ Data Ingestion** - Generates realistic synthetic data for all indicators
 - **✅ ML Model** - Random Forest trained with R² score of ~0.66
 - **✅ Data Fusion Engine** - Combines 5 data sources with weighted averaging
-- **✅ SQLite Database** - Stores time-series GDP data
+- **✅ Elasticsearch Database** - Stores time-series GDP data with full-text search
 - **✅ Real-time Processing** - Updates every API call
 
 ### 📊 Data Sources (All Simulated)
@@ -89,7 +89,6 @@ python test_system.py
 - `electricity.csv` - 81KB of consumption data  
 - `internet_usage.csv` - 82KB of usage data
 - `social_signals.csv` - 60KB of social media data
-- `gdp_data.db` - SQLite database with time-series
 - `gdp_model.pkl` - Trained ML model (16MB)
 
 ## 🎮 Demo Capabilities

@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import sqlite3
 from datetime import datetime, timedelta
 import json
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'modules'))
+
 from fusion_engine import FusionEngine
 from data_ingestion import DataIngestion
 from data_preprocessing import DataPreprocessor
@@ -22,56 +25,6 @@ es_client = SimpleElasticsearchClient()
 if not es_client.es_available:
     raise Exception("❌ Elasticsearch is REQUIRED for this hackathon project!")
 print("✅ Elasticsearch client initialized - HACKATHON READY")
-
-# Initialize database
-def init_db():
-    conn = sqlite3.connect('gdp_data.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS gdp_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            province TEXT,
-            gdp_index REAL,
-            composite_index REAL,
-            mobile_money REAL,
-            electricity REAL,
-            internet REAL,
-            satellite REAL,
-            social_media REAL
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-init_db()
-
-def save_to_db(provincial_results):
-    """Save results to database"""
-    conn = sqlite3.connect('gdp_data.db')
-    cursor = conn.cursor()
-    
-    timestamp = datetime.now().isoformat()
-    
-    for province, data in provincial_results.items():
-        cursor.execute('''
-            INSERT INTO gdp_history 
-            (timestamp, province, gdp_index, composite_index, mobile_money, electricity, internet, satellite, social_media)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            timestamp,
-            province,
-            data.get('ml_prediction', data['composite_index']),
-            data['composite_index'],
-            data['indicators']['mobile_money'],
-            data['indicators']['electricity'],
-            data['indicators']['internet'],
-            data['indicators']['satellite'],
-            data['indicators']['social_media']
-        ))
-    
-    conn.commit()
-    conn.close()
 
 @app.route('/predict', methods=['GET'])
 def predict():

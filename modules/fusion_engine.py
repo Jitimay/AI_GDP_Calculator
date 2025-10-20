@@ -7,7 +7,7 @@ from social_media_module import SocialMediaAnalyzer
 from ml_model import GDPPredictor
 
 class FusionEngine:
-    def __init__(self, config_path='config.json'):
+    def __init__(self, config_path='../config.json'):
         with open(config_path, 'r') as f:
             self.config = json.load(f)
         
