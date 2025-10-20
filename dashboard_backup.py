@@ -15,13 +15,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - Modern Theme
+# Custom CSS - Modern Dark Theme
 st.markdown("""
 <style>
+    /* Main container styling */
     .main .block-container {
+        padding-top: 2rem;
         background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
         min-height: 100vh;
     }
+    
+    /* Header styling */
     .main-header {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
@@ -31,16 +35,80 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
     }
+    
+    /* Metric cards */
     .stMetric {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem;
         border-radius: 12px;
         color: white !important;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
     }
+    
+    .stMetric label {
+        color: rgba(255,255,255,0.8) !important;
+        font-weight: 600;
+    }
+    
+    .stMetric div[data-testid="metric-container"] > div {
+        color: white !important;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    /* Sidebar */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    /* Charts background */
     .js-plotly-plot {
         background: rgba(255,255,255,0.05) !important;
         border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    /* Alert styling */
+    .alert-success {
+        background: linear-gradient(90deg, #56ab2f 0%, #a8e6cf 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
+    }
+    
+    .alert-warning {
+        background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    /* Data tables */
+    .stDataFrame {
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        overflow: hidden;
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 </style>
@@ -63,33 +131,72 @@ def fetch_dashboard_data():
         return None
 
 def create_gdp_gauge(value, title="National GDP Index"):
-    """Create a gauge chart for GDP index"""
+    """Create a modern gauge chart for GDP index"""
     fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
         value = value,
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': title},
-        delta = {'reference': 50},
+        title = {'text': title, 'font': {'size': 24, 'color': 'white'}},
+        delta = {'reference': 50, 'increasing': {'color': "#00ff88"}, 'decreasing': {'color': "#ff4444"}},
         gauge = {
-            'axis': {'range': [None, 100]},
-            'bar': {'color': "darkblue"},
+            'axis': {'range': [None, 100], 'tickcolor': "white", 'tickfont': {'color': 'white'}},
+            'bar': {'color': "#667eea", 'thickness': 0.8},
+            'bgcolor': "rgba(255,255,255,0.1)",
+            'borderwidth': 2,
+            'bordercolor': "rgba(255,255,255,0.3)",
             'steps': [
-                {'range': [0, 25], 'color': "lightgray"},
-                {'range': [25, 50], 'color': "gray"},
-                {'range': [50, 75], 'color': "lightgreen"},
-                {'range': [75, 100], 'color': "green"}
+                {'range': [0, 25], 'color': "rgba(255,68,68,0.3)"},
+                {'range': [25, 50], 'color': "rgba(255,193,7,0.3)"},
+                {'range': [50, 75], 'color': "rgba(0,255,136,0.3)"},
+                {'range': [75, 100], 'color': "rgba(0,255,136,0.5)"}
             ],
             'threshold': {
-                'line': {'color': "red", 'width': 4},
+                'line': {'color': "white", 'width': 4},
                 'thickness': 0.75,
                 'value': 90
             }
         }
     ))
-    fig.update_layout(height=300)
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font={'color': "white", 'family': "Arial"},
+        height=300,
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
     return fig
 
-def create_province_map(provincial_data):
+def enhance_chart_styling(fig):
+    """Apply modern dark theme styling to charts"""
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font={'color': "white", 'family': "Arial"},
+        title_font_color="white",
+        title_font_size=18,
+        margin=dict(l=20, r=20, t=60, b=20),
+        showlegend=True,
+        legend=dict(
+            bgcolor="rgba(255,255,255,0.1)",
+            bordercolor="rgba(255,255,255,0.2)",
+            borderwidth=1,
+            font=dict(color="white")
+        )
+    )
+    
+    # Update axes
+    fig.update_xaxes(
+        gridcolor="rgba(255,255,255,0.1)",
+        tickfont=dict(color="white"),
+        titlefont=dict(color="white")
+    )
+    fig.update_yaxes(
+        gridcolor="rgba(255,255,255,0.1)",
+        tickfont=dict(color="white"),
+        titlefont=dict(color="white")
+    )
+    
+    return fig
     """Create a map visualization of provinces"""
     # Simplified coordinates for Burundi provinces
     coordinates = {
@@ -131,12 +238,15 @@ def create_province_map(provincial_data):
     )
     
     fig.update_layout(
-        mapbox_style="open-street-map",
+        mapbox_style="carto-darkmatter",
         height=500,
-        margin={"r":0,"t":0,"l":0,"b":0}
+        margin={"r":0,"t":0,"l":0,"b":0},
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font={'color': "white"}
     )
     
-    return fig
+    return enhance_chart_styling(fig)
 
 def create_time_series(historical_data):
     """Create time series chart"""
@@ -165,14 +275,29 @@ def create_time_series(historical_data):
         showlegend=True
     )
     
-    return fig
+    return enhance_chart_styling(fig)
 
 def main():
-    # Modern Header
+    # Modern Header with animations
     st.markdown("""
     <div class="main-header">
-        <h1 style="margin: 0; font-size: 3rem;">🌍 AI-Powered GDP Calculator</h1>
-        <p style="margin: 0.5rem 0 0 0; font-size: 1.2rem;">Real-time estimation of Burundi's $2.3B informal economy</p>
+        <h1 style="margin: 0; font-size: 3rem; font-weight: 700;">
+            🌍 AI-Powered GDP Calculator
+        </h1>
+        <p style="margin: 0.5rem 0 0 0; font-size: 1.2rem; opacity: 0.9;">
+            Real-time estimation of Burundi's $2.3B informal economy using AI & multi-source data fusion
+        </p>
+        <div style="margin-top: 1rem;">
+            <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 20px; margin: 0 0.5rem;">
+                🤖 Machine Learning
+            </span>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 20px; margin: 0 0.5rem;">
+                📊 Real-time Data
+            </span>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 20px; margin: 0 0.5rem;">
+                🌍 5 Data Sources
+            </span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -200,27 +325,59 @@ def main():
         historical_data = data.get('historical', data.get('historical_data', {}))
         alerts = data.get('alerts', [])
         
-        # Main metrics row
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                "National GDP Index",
-                f"{current_data['national_index']:.1f}",
-                delta=f"{current_data['national_index'] - 50:.1f}"
-            )
+def show_loading_animation():
+    """Show modern loading animation"""
+    loading_html = """
+    <div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+        <div style="text-align: center;">
+            <div style="border: 4px solid rgba(102, 126, 234, 0.3); border-top: 4px solid #667eea; 
+                        border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            <p style="color: white; margin-top: 1rem; font-size: 1.1rem;">🤖 AI Processing Economic Data...</p>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    """
+    return st.markdown(loading_html, unsafe_allow_html=True)
+
+def create_enhanced_metric(title, value, delta=None, icon="📊"):
+    """Create enhanced metric card with modern styling"""
+    delta_html = ""
+    if delta is not None:
+        color = "#00ff88" if delta >= 0 else "#ff4444"
+        arrow = "↗️" if delta >= 0 else "↘️"
+        delta_html = f'<div style="color: {color}; font-size: 0.9rem; margin-top: 0.5rem;">{arrow} {delta}</div>'
+    
+    metric_html = f"""
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                padding: 1.5rem; border-radius: 12px; color: white; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+                border: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.5rem; margin-right: 0.5rem;">{icon}</span>
+            <span style="color: rgba(255,255,255,0.8); font-weight: 600;">{title}</span>
+        </div>
+        <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">{value}</div>
+        {delta_html}
+    </div>
+    """
+    return st.markdown(metric_html, unsafe_allow_html=True)
         
         with col2:
             active_provinces = len([p for p, d in current_data['provincial_data'].items() 
                                  if d['composite_index'] > 60])
-            st.metric("Active Provinces", active_provinces, delta=None)
+            create_enhanced_metric("Active Provinces", str(active_provinces), None, "🏛️")
         
         with col3:
             avg_activity = sum(d['composite_index'] for d in current_data['provincial_data'].values()) / len(current_data['provincial_data'])
-            st.metric("Avg Activity", f"{avg_activity:.1f}", delta=None)
+            create_enhanced_metric("Avg Activity", f"{avg_activity:.1f}", None, "📈")
         
         with col4:
-            st.metric("Alert Count", len(alerts), delta=None)
+            create_enhanced_metric("Alert Count", str(len(alerts)), None, "🚨")
         
         # Alerts section
         if alerts:
