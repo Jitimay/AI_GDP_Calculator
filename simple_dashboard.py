@@ -18,9 +18,16 @@ try:
         
         st.success("✅ System Status: ONLINE - Elasticsearch Connected")
         
-        # National Index
-        national_idx = data.get('national_index', 0)
-        st.metric("🇧🇮 National GDP Index", f"{national_idx:.1f}%")
+        # National Index with better styling
+        st.markdown("### 🇧🇮 National GDP Index")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 20px; background: linear-gradient(90deg, #1f77b4, #ff7f0e); border-radius: 10px; color: white;">
+                <h1 style="margin: 0; font-size: 3em;">{national_idx:.1f}%</h1>
+                <p style="margin: 0; font-size: 1.2em;">Real-time GDP Index</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         # Provincial data
         st.markdown("### 📊 Provincial GDP Indices")

@@ -107,28 +107,40 @@ def dashboard_data():
         provincial_results = fusion_engine.process_realtime_data()
         national_index = fusion_engine.calculate_national_index(provincial_results)
         
-        # Get historical data from Elasticsearch (with fallback)
-        try:
-            historical_data = es_client.get_recent_data(hours=24)
-        except:
-            # Mock data for demo if ES is slow
-            from mock_es_data import get_mock_data
-            mock_data = get_mock_data()
-            historical_data = mock_data["recent_data"]
-            alerts = mock_data["alerts"]
-            print("⚠️  Using mock ES data for demo")
-            
-            # Format response with mock data
-            response = {
-                'timestamp': datetime.now().isoformat(),
+        # Get alerts using real-time data
+        alerts = []
+        for province, data in provincial_results.items():
+            gdp_val = data.get('composite_index', 0)
+            if gdp_val > 50:  # Lower threshold to show alerts
+                alerts.append({
+                    'province': province,
+                    'gdp_index': gdp_val,
+                    'message': f"{province} showing high activity: {gdp_val:.1f}%"
+                })
+        
+        # Simple historical data structure
+        history_by_province = {}
+        for province in provincial_results.keys():
+            history_by_province[province] = [
+                {"timestamp": datetime.now().isoformat(), "value": provincial_results[province]['composite_index']}
+            ]
+        
+        response = {
+            'timestamp': datetime.now().isoformat(),
+            'current': {
                 'national_index': national_index,
-                'provincial_data': provincial_results,
-                'historical_data': {"Bujumbura": [{"timestamp": "2024-01-20T10:00:00", "value": 75.2}]},
-                'alerts': alerts,
-                'status': 'success',
-                'data_source': 'elasticsearch_with_fallback'
-            }
-            return jsonify(response)
+                'provincial_data': provincial_results
+            },
+            'historical': history_by_province,
+            'alerts': alerts,
+            'status': 'success',
+            'data_source': 'elasticsearch'
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({'error': str(e), 'status': 'error'}), 500
         
         # Format historical data
         history_by_province = {}
@@ -141,15 +153,15 @@ def dashboard_data():
                 'value': record['gdp_index']
             })
         
-        # Get alerts using Elasticsearch
-        alert_results = es_client.get_alerts(threshold=80)
+        # Get alerts using real-time data instead of ES
         alerts = []
-        if 'aggregations' in alert_results:
-            for bucket in alert_results['aggregations']['alert_provinces']['buckets']:
+        for province, data in provincial_results.items():
+            gdp_val = data.get('composite_index', 0)
+            if gdp_val > 70:  # Alert threshold
                 alerts.append({
-                    'province': bucket['key'],
-                    'gdp_index': bucket['max_gdp']['value'],
-                    'message': f"{bucket['key']} showing high activity: {bucket['max_gdp']['value']:.1f}%"
+                    'province': province,
+                    'gdp_index': gdp_val,
+                    'message': f"{province} showing high activity: {gdp_val:.1f}%"
                 })
         
         response = {
