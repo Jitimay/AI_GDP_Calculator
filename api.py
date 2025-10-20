@@ -245,5 +245,82 @@ def search_recent_data():
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'error'}), 500
 
+@app.route('/search')
+def search_data():
+    """Search province data - Demo version"""
+    province = request.args.get('province', '').strip()
+    metric = request.args.get('metric', 'all').lower()
+    days = int(request.args.get('days', 7))
+    
+    if not province:
+        return jsonify({'error': 'Province parameter required'}), 400
+    
+    # Demo data for search functionality
+    demo_data = []
+    for i in range(days):
+        demo_data.append({
+            'province': province,
+            'timestamp': f'2025-10-{21-i:02d}T12:00:00Z',
+            'electricity': 45.5 + i * 2.1,
+            'mobile_money': 38.2 + i * 1.8,
+            'internet': 52.1 + i * 1.5,
+            'social_media': 41.3 + i * 2.2,
+            'composite_index': 44.3 + i * 1.9
+        })
+    
+    # Filter by metric if specified
+    if metric != 'all' and metric in ['electricity', 'mobile_money', 'internet', 'social_media']:
+        filtered_data = []
+        for data in demo_data:
+            filtered_data.append({
+                'province': data['province'],
+                'timestamp': data['timestamp'],
+                metric: data[metric],
+                'composite_index': data['composite_index']
+            })
+    else:
+        filtered_data = demo_data
+    
+    return jsonify({
+        'status': 'success',
+        'province': province,
+        'metric': metric,
+        'days': days,
+        'total_records': len(filtered_data),
+        'data': filtered_data
+    })
+
+@app.route('/history')
+def get_history():
+    """Get historical data - Demo version"""
+    days = int(request.args.get('days', 30))
+    
+    provinces = ['Bujumbura', 'Gitega', 'Ngozi', 'Kayanza', 'Bururi', 'Cibitoke']
+    history_by_province = {}
+    
+    for province in provinces:
+        province_data = []
+        for i in range(min(days, 30)):  # Limit to 30 days
+            province_data.append({
+                'province': province,
+                'timestamp': f'2025-10-{21-i:02d}T12:00:00Z',
+                'gdp_index': 40 + (hash(province) % 20) + i * 0.5,
+                'composite_index': 42 + (hash(province) % 18) + i * 0.4,
+                'indicators': {
+                    'electricity': 35 + (hash(province + 'elec') % 30) + i * 0.3,
+                    'mobile_money': 30 + (hash(province + 'mobile') % 25) + i * 0.4,
+                    'internet': 45 + (hash(province + 'net') % 20) + i * 0.2,
+                    'social_media': 38 + (hash(province + 'social') % 22) + i * 0.3
+                }
+            })
+        history_by_province[province] = province_data
+    
+    return jsonify({
+        'status': 'success',
+        'days': days,
+        'provinces': provinces,
+        'data': history_by_province
+    })
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

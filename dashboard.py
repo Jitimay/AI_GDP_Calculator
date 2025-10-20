@@ -50,6 +50,99 @@ st.markdown("""
 API_BASE = "http://localhost:5000"
 
 def fetch_dashboard_data():
+    """Fetch dashboard data from API"""
+    try:
+        response = requests.get(f"{API_BASE}/dashboard-data", timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"API Error: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Connection error: {e}")
+        return None
+
+def search_province_data(province, metric, days):
+    """Search province data using API"""
+    try:
+        response = requests.get(f"{API_BASE}/search", 
+                              params={'province': province, 'metric': metric, 'days': days},
+                              timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Search failed: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Search error: {e}")
+        return None
+
+def get_all_history(days):
+    """Get historical data for all provinces"""
+    try:
+        response = requests.get(f"{API_BASE}/history", 
+                              params={'days': days}, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"History fetch failed: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"History error: {e}")
+        return None
+
+def display_search_results():
+    """Display search results if available"""
+    if 'search_results' in st.session_state:
+        results = st.session_state['search_results']
+        st.markdown("### 🔍 Search Results")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Province", results['province'])
+        with col2:
+            st.metric("Records Found", results['total_records'])
+        with col3:
+            st.metric("Days Searched", results['days'])
+        
+        if results['data']:
+            df = pd.DataFrame(results['data'])
+            st.dataframe(df, use_container_width=True)
+            
+            # Create chart if numeric data available
+            if len(df) > 1 and any(col for col in df.columns if col not in ['province', 'timestamp']):
+                numeric_cols = [col for col in df.columns if col not in ['province', 'timestamp']]
+                if numeric_cols:
+                    fig = px.line(df, x='timestamp', y=numeric_cols[0], 
+                                title=f"{results['province']} - {numeric_cols[0]} Over Time")
+                    st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No data found for the selected criteria")
+
+def display_history():
+    """Display historical data if available"""
+    if 'history_data' in st.session_state:
+        history = st.session_state['history_data']
+        st.markdown("### 📊 Historical Data")
+        
+        st.metric("Provinces", len(history['provinces']))
+        
+        # Province selector for detailed view
+        selected_prov = st.selectbox("View Province Details", history['provinces'])
+        
+        if selected_prov in history['data']:
+            prov_data = history['data'][selected_prov]
+            df = pd.DataFrame(prov_data)
+            
+            if not df.empty:
+                st.subheader(f"{selected_prov} Historical Data")
+                st.dataframe(df, use_container_width=True)
+                
+                # Chart
+                if 'composite_index' in df.columns:
+                    fig = px.line(df, x='timestamp', y='composite_index',
+                                title=f"{selected_prov} GDP Index Over Time")
+                    st.plotly_chart(fig, use_container_width=True)
     """Fetch data from API"""
     try:
         response = requests.get(f"{API_BASE}/dashboard-data", timeout=10)
@@ -176,6 +269,40 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
+    # Sidebar for search functionality
+    with st.sidebar:
+        st.markdown("### 🔍 Search & History")
+        
+        # Province search
+        provinces = ['Bujumbura', 'Gitega', 'Ngozi', 'Kayanza', 'Bururi', 'Cibitoke']
+        selected_province = st.selectbox("Select Province", provinces)
+        
+        # Metric selection
+        metrics = {
+            'all': 'All Metrics',
+            'mobile_money': 'Mobile Money Sales',
+            'electricity': 'Electricity Usage',
+            'internet': 'Internet Activity',
+            'social_media': 'Social Media'
+        }
+        selected_metric = st.selectbox("Select Metric", list(metrics.keys()), 
+                                     format_func=lambda x: metrics[x])
+        
+        # Time range
+        days = st.slider("Days of History", 1, 30, 7)
+        
+        # Search button
+        if st.button("🔍 Search Data"):
+            search_results = search_province_data(selected_province, selected_metric, days)
+            if search_results:
+                st.session_state['search_results'] = search_results
+        
+        # History button
+        if st.button("📊 View All History"):
+            history_data = get_all_history(days)
+            if history_data:
+                st.session_state['history_data'] = history_data
+    
     # Real-time auto-refresh controls
     auto_refresh = st.sidebar.checkbox("🔄 Real-time refresh", value=True)
     refresh_interval = st.sidebar.selectbox("Refresh interval", [2, 3, 5, 10], index=0)
@@ -290,6 +417,10 @@ def main():
         st.markdown("---")
         st.markdown(f"Last updated: {data['timestamp']}")
         
+        # Display search results and history
+        display_search_results()
+        display_history()
+        
         # Auto-refresh only after successful data display
         if auto_refresh:
             time.sleep(refresh_interval)
@@ -298,6 +429,10 @@ def main():
     else:
         st.error("Unable to fetch data. Please ensure the API server is running on localhost:5000")
         st.info("Run: `python api.py` to start the backend server")
+        
+        # Still show search functionality even if main data fails
+        display_search_results()
+        display_history()
 
 if __name__ == "__main__":
     main()
