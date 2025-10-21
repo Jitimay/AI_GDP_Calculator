@@ -19,8 +19,22 @@ pip install -r requirements.txt
 ```
 
 **Access:**
-- API: http://localhost:5000
-- Dashboard: http://localhost:8501
+- **Dashboard**: http://localhost:8501
+- **API**: http://localhost:5000
+
+## 🎯 **DEMO READY - 2 Minute Demo:**
+
+### **1. Show Compliance** (30s)
+http://localhost:5000/health → Shows Google Cloud + Elasticsearch
+
+### **2. Live Predictions** (30s)  
+http://localhost:8501 → Real-time GDP with Vertex AI
+
+### **3. Search Feature** (30s)
+Dashboard Sidebar → Search provinces with Elasticsearch
+
+### **4. 12-Month Forecast** (30s)
+Dashboard Sidebar → AI-powered forecasting
 
 ## 📊 Features
 
@@ -28,6 +42,7 @@ pip install -r requirements.txt
 - **Real-time GDP estimation** using 5 data sources
 - **Elasticsearch** for scalable search & analytics
 - **Interactive dashboard** with live charts
+- **12-month forecasting** with AI confidence scoring
 - **Province search** functionality
 - **RESTful API** for data access
 
@@ -54,6 +69,7 @@ Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → 
 - `GET /health` - System health (includes Google Cloud status)
 - `GET /predict` - Real-time GDP predictions with Vertex AI
 - `GET /search` - Search province data in Elasticsearch
+- `GET /forecast` - 12-month AI forecasting
 - `GET /history` - Historical data analysis
 
 ## 🌍 Data Sources
@@ -71,5 +87,10 @@ Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → 
 - Confidence scoring
 - AI-powered economic insights
 - Real-time pattern recognition
+- 12-month forecasting capabilities
+
+## 🏆 **HACKATHON WINNER READY!**
 
 Built for making invisible economies visible through **Google Cloud AI** and **Elasticsearch**.
+
+**Demo Files**: `DEMO_SCRIPT.md` | `QUICK_DEMO.md`
