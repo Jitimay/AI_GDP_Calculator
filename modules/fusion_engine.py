@@ -62,19 +62,27 @@ class FusionEngine:
             # Calculate composite index
             composite_result = self.calculate_composite_index(province_data)
             
-            # Get ML prediction if model is available
+            # Get ML prediction with Google Cloud Vertex AI enhancement
             try:
                 ml_features = {
-                    'mobile_money_volume_normalized': composite_result['indicators']['mobile_money'],
-                    'mobile_money_count_normalized': composite_result['indicators']['mobile_money'] * 0.8,
-                    'electricity_normalized': composite_result['indicators']['electricity'],
-                    'internet_normalized': composite_result['indicators']['internet'],
-                    'social_score_normalized': composite_result['indicators']['social_media']
+                    'mobile_money': composite_result['indicators']['mobile_money'],
+                    'electricity': composite_result['indicators']['electricity'],
+                    'internet': composite_result['indicators']['internet'],
+                    'satellite': composite_result['indicators']['satellite'],
+                    'social_media': composite_result['indicators']['social_media']
                 }
-                ml_prediction = self.gdp_predictor.predict(ml_features)
-                composite_result['ml_prediction'] = float(ml_prediction)
-            except:
+                
+                # Use Vertex AI enhanced prediction
+                vertex_result = self.gdp_predictor.vertex_ai.predict_gdp_with_ai(ml_features)
+                composite_result['ml_prediction'] = float(vertex_result['prediction'])
+                composite_result['ai_confidence'] = vertex_result['confidence']
+                composite_result['vertex_ai_enhanced'] = True
+                composite_result['google_cloud_used'] = True
+                
+            except Exception as e:
+                print(f"Vertex AI prediction fallback: {e}")
                 composite_result['ml_prediction'] = composite_result['composite_index']
+                composite_result['vertex_ai_enhanced'] = False
             
             results[province] = composite_result
         

@@ -62,6 +62,75 @@ def fetch_dashboard_data():
         st.error(f"Connection error: {e}")
         return None
 
+def get_forecast_data(province, months):
+    """Get 12-month forecast data from API"""
+    try:
+        response = requests.get(f"{API_BASE}/forecast", 
+                              params={'province': province, 'months': months}, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Forecast failed: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Forecast error: {e}")
+        return None
+
+def display_forecast():
+    """Display forecast results if available"""
+    if 'forecast_data' in st.session_state:
+        forecast = st.session_state['forecast_data']
+        st.markdown("### 🔮 12-Month GDP Forecast")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Forecast Period", f"{forecast['forecast_months']} months")
+        with col2:
+            st.metric("Province", forecast['province'])
+        with col3:
+            st.metric("AI Powered", "✅ Vertex AI")
+        
+        if forecast['data']:
+            # Create forecast chart
+            chart_data = []
+            for month_data in forecast['data']:
+                for province, data in month_data['provinces'].items():
+                    chart_data.append({
+                        'Month': month_data['date'],
+                        'Province': province,
+                        'GDP_Forecast': data['gdp_forecast'],
+                        'Confidence': data['confidence']
+                    })
+            
+            if chart_data:
+                df = pd.DataFrame(chart_data)
+                
+                # Forecast line chart
+                fig = px.line(df, x='Month', y='GDP_Forecast', color='Province',
+                            title="12-Month GDP Forecast (Vertex AI Enhanced)")
+                fig.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font_color='white'
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Confidence chart
+                fig2 = px.line(df, x='Month', y='Confidence', color='Province',
+                             title="Forecast Confidence Over Time")
+                fig2.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font_color='white'
+                )
+                st.plotly_chart(fig2, use_container_width=True)
+                
+                # Data table
+                st.subheader("Forecast Data")
+                st.dataframe(df, use_container_width=True)
+        else:
+            st.info("No forecast data available")
+
 def search_province_data(province, metric, days):
     """Search province data using API"""
     try:
@@ -302,6 +371,19 @@ def main():
             history_data = get_all_history(days)
             if history_data:
                 st.session_state['history_data'] = history_data
+        
+        st.markdown("---")
+        st.markdown("### 📈 12-Month Forecast")
+        
+        # Forecast controls
+        forecast_province = st.selectbox("Forecast Province", ['all'] + provinces, key='forecast_prov')
+        forecast_months = st.slider("Forecast Months", 1, 12, 6)
+        
+        # Forecast button
+        if st.button("🔮 Generate Forecast"):
+            forecast_data = get_forecast_data(forecast_province, forecast_months)
+            if forecast_data:
+                st.session_state['forecast_data'] = forecast_data
     
     # Real-time auto-refresh controls
     auto_refresh = st.sidebar.checkbox("🔄 Real-time refresh", value=True)
@@ -420,6 +502,7 @@ def main():
         # Display search results and history
         display_search_results()
         display_history()
+        display_forecast()
         
         # Auto-refresh only after successful data display
         if auto_refresh:
@@ -433,6 +516,7 @@ def main():
         # Still show search functionality even if main data fails
         display_search_results()
         display_history()
+        display_forecast()
 
 if __name__ == "__main__":
     main()

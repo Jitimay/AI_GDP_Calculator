@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 import os
+from vertex_ai_predictor import VertexAIPredictor
 
 class GDPPredictor:
     def __init__(self):
@@ -18,6 +19,10 @@ class GDPPredictor:
         ]
         self.is_trained = False
         self.model_path = 'gdp_model.pkl'
+        
+        # Initialize Google Cloud Vertex AI
+        self.vertex_ai = VertexAIPredictor()
+        print("🔥 GDP Predictor with Google Cloud Vertex AI integration initialized")
     
     def train_model(self, df):
         """Train the GDP prediction model"""

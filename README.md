@@ -1,6 +1,11 @@
 # 🌍 AI-Powered GDP Calculator
 
-Real-time AI platform that estimates Burundi's informal economy GDP using multi-source data fusion and machine learning.
+Real-time AI platform that estimates Burundi's informal economy GDP using **Google Cloud Vertex AI** and **Elasticsearch** with multi-source data fusion.
+
+## 🏆 Hackathon Compliance
+- ✅ **Google Cloud Vertex AI** - Enhanced ML predictions
+- ✅ **Elasticsearch** - Partner Challenge requirement  
+- ✅ **AI Innovation** - Real-time economic insights
 
 ## 🚀 Quick Start
 
@@ -19,39 +24,37 @@ pip install -r requirements.txt
 
 ## 📊 Features
 
+- **Google Cloud Vertex AI** enhanced GDP predictions
 - **Real-time GDP estimation** using 5 data sources
-- **ML predictions** with Random Forest model
+- **Elasticsearch** for scalable search & analytics
 - **Interactive dashboard** with live charts
-- **Elasticsearch storage** for scalable data handling
+- **Province search** functionality
 - **RESTful API** for data access
 
 ## 🏗️ Architecture
 
 ```
-Data Sources → Fusion Engine → ML Model → Elasticsearch → API → Dashboard
+Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → API → Dashboard
 ```
 
-## 📁 Project Structure
+## 🔧 Technology Stack
 
-```
-├── api.py              # Flask API server
-├── dashboard.py        # Streamlit dashboard
-├── config.json         # Configuration
-├── start.sh           # Start script
-├── modules/           # Core modules
-│   ├── fusion_engine.py
-│   ├── ml_model.py
-│   ├── es_client.py
-│   └── ...
-├── data/             # CSV data files
-└── docs/             # Documentation
-```
+### **Google Cloud Integration**
+- **Vertex AI** - Enhanced ML predictions
+- **AI-powered insights** generation
+- **Confidence scoring** algorithms
+
+### **Partner Challenge**
+- **Elasticsearch** - Data storage & search
+- **Real-time indexing** 
+- **Advanced analytics**
 
 ## 🔧 API Endpoints
 
-- `GET /health` - Health check
-- `GET /predict` - Real-time GDP predictions
-- `GET /dashboard-data` - Dashboard data
+- `GET /health` - System health (includes Google Cloud status)
+- `GET /predict` - Real-time GDP predictions with Vertex AI
+- `GET /search` - Search province data in Elasticsearch
+- `GET /history` - Historical data analysis
 
 ## 🌍 Data Sources
 
@@ -61,4 +64,12 @@ Data Sources → Fusion Engine → ML Model → Elasticsearch → API → Dashbo
 4. **Satellite** (15%) - Market density
 5. **Social Media** (10%) - Commercial activity
 
-Built for making invisible economies visible through AI.
+## 🤖 AI Enhancement
+
+**Google Cloud Vertex AI** provides:
+- Enhanced prediction accuracy
+- Confidence scoring
+- AI-powered economic insights
+- Real-time pattern recognition
+
+Built for making invisible economies visible through **Google Cloud AI** and **Elasticsearch**.
