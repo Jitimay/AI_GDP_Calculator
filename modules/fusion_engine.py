@@ -7,7 +7,7 @@ from social_media_module import SocialMediaAnalyzer
 from ml_model import GDPPredictor
 
 class FusionEngine:
-    def __init__(self, config_path='../config.json'):
+    def __init__(self, config_path='config.json'):
         with open(config_path, 'r') as f:
             self.config = json.load(f)
         
@@ -62,7 +62,7 @@ class FusionEngine:
             # Calculate composite index
             composite_result = self.calculate_composite_index(province_data)
             
-            # Get ML prediction with Google Cloud Vertex AI enhancement
+            # Get ML prediction with Gemini AI enhancement
             try:
                 ml_features = {
                     'mobile_money': composite_result['indicators']['mobile_money'],
@@ -72,17 +72,17 @@ class FusionEngine:
                     'social_media': composite_result['indicators']['social_media']
                 }
                 
-                # Use Vertex AI enhanced prediction
-                vertex_result = self.gdp_predictor.vertex_ai.predict_gdp_with_ai(ml_features)
-                composite_result['ml_prediction'] = float(vertex_result['prediction'])
-                composite_result['ai_confidence'] = vertex_result['confidence']
-                composite_result['vertex_ai_enhanced'] = True
+                # Use Gemini enhanced prediction
+                gemini_result = self.gdp_predictor.predict_with_gemini(ml_features)
+                composite_result['ml_prediction'] = float(gemini_result['prediction'])
+                composite_result['ai_confidence'] = gemini_result['confidence']
+                composite_result['gemini_enhanced'] = True
                 composite_result['google_cloud_used'] = True
                 
             except Exception as e:
-                print(f"Vertex AI prediction fallback: {e}")
+                print(f"Gemini prediction fallback: {e}")
                 composite_result['ml_prediction'] = composite_result['composite_index']
-                composite_result['vertex_ai_enhanced'] = False
+                composite_result['gemini_enhanced'] = False
             
             results[province] = composite_result
         

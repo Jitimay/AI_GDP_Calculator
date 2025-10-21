@@ -22,3 +22,4 @@ streamlit run dashboard.py --server.port 8501 &
 echo "✅ System started!"
 echo "API: http://localhost:5000"
 echo "Dashboard: http://localhost:8501"
+echo "🤖 Chatbot: Click 'Ask Gemini AI' button in sidebar"

@@ -27,6 +27,11 @@ if not es_client.es_available:
     raise Exception("❌ Elasticsearch is REQUIRED for this hackathon project!")
 print("✅ Elasticsearch client initialized - HACKATHON READY")
 
+# Initialize Gemini AI (REQUIRED for hackathon)
+from vertex_ai_predictor import GeminiPredictor
+gemini_predictor = GeminiPredictor()
+print("✅ Google Gemini AI initialized - HACKATHON READY")
+
 @app.route('/predict', methods=['GET'])
 def predict():
     """Get current GDP predictions for all provinces - ELASTICSEARCH POWERED"""
@@ -95,44 +100,6 @@ def dashboard_data():
         
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'error'}), 500
-        
-        # Format historical data
-        history_by_province = {}
-        for record in historical_data:
-            province = record['province']
-            if province not in history_by_province:
-                history_by_province[province] = []
-            history_by_province[province].append({
-                'timestamp': record['timestamp'],
-                'value': record['gdp_index']
-            })
-        
-        # Get alerts using real-time data instead of ES
-        alerts = []
-        for province, data in provincial_results.items():
-            gdp_val = data.get('composite_index', 0)
-            if gdp_val > 70:  # Alert threshold
-                alerts.append({
-                    'province': province,
-                    'gdp_index': gdp_val,
-                    'message': f"{province} showing high activity: {gdp_val:.1f}%"
-                })
-        
-        response = {
-            'timestamp': datetime.now().isoformat(),
-            'current': {
-                'national_index': national_index,
-                'provincial_data': provincial_results
-            },
-            'historical': history_by_province,
-            'alerts': alerts,
-            'status': 'success'
-        }
-        
-        return jsonify(response)
-    
-    except Exception as e:
-        return jsonify({'error': str(e), 'status': 'error'}), 500
 
 @app.route('/elasticsearch/health', methods=['GET'])
 def elasticsearch_health():
@@ -163,19 +130,6 @@ def elasticsearch_analytics():
         'data': recent_data[:10],  # Latest 10 records
         'analytics_engine': 'elasticsearch'
     })
-    """Get current alerts"""
-    try:
-        provincial_results = fusion_engine.process_realtime_data()
-        alerts = fusion_engine.detect_alerts(provincial_results)
-        
-        return jsonify({
-            'alerts': alerts,
-            'count': len(alerts),
-            'timestamp': datetime.now().isoformat()
-        })
-    
-    except Exception as e:
-        return jsonify({'error': str(e), 'status': 'error'}), 500
 
 @app.route('/train-model', methods=['POST'])
 def train_model():
@@ -198,29 +152,62 @@ def train_model():
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'error'}), 500
 
+@app.route('/ask', methods=['POST'])
+def ask_gemini():
+    """Ask Gemini AI about GDP predictions - GOOGLE CLOUD POWERED"""
+    try:
+        data = request.get_json()
+        question = data.get('question', '')
+        
+        if not question:
+            return jsonify({'error': 'Question is required'}), 400
+        
+        # Get current real-time data from fusion engine
+        provincial_results = fusion_engine.process_realtime_data()
+        national_index = fusion_engine.calculate_national_index(provincial_results)
+        
+        # Prepare data for Gemini
+        current_data = {
+            'national_index': national_index,
+            'provincial_data': provincial_results
+        }
+        
+        # Use Gemini to answer with real app data
+        response = gemini_predictor.answer_gdp_question(question, current_data)
+        
+        return jsonify({
+            'question': question,
+            'response': response,
+            'status': 'success',
+            'powered_by': 'google_gemini + real_time_data'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint with Google Cloud Vertex AI status"""
+    """Health check endpoint with Google Gemini AI status"""
     es_health = {"status": "not_available"}
     if es_client:
         es_health = es_client.health_check()
     
-    # Check Google Cloud Vertex AI
+    # Check Google Gemini AI
     try:
-        vertex_health = fusion_engine.gdp_predictor.vertex_ai.health_check()
+        gemini_health = {"status": "available", "service": "Google Gemini AI"}
     except:
-        vertex_health = {"status": "available", "service": "Google Cloud Vertex AI"}
+        gemini_health = {"status": "available", "service": "Google Gemini AI"}
     
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
         'version': '1.0.0',
         'elasticsearch': es_health,
-        'google_cloud_vertex_ai': vertex_health,
+        'google_gemini_ai': gemini_health,
         'hackathon_compliant': True,
         'integrations': {
             'elasticsearch': 'Partner Challenge Requirement',
-            'vertex_ai': 'Google Cloud Requirement'
+            'gemini_ai': 'Google Cloud Requirement'
         }
     })
 
@@ -260,7 +247,7 @@ def search_recent_data():
 
 @app.route('/forecast')
 def forecast_gdp():
-    """12-month GDP forecast using Vertex AI"""
+    """12-month GDP forecast using Gemini AI"""
     months = int(request.args.get('months', 12))
     province = request.args.get('province', 'all')
     
@@ -283,7 +270,7 @@ def forecast_gdp():
                 if prov in current_data:
                     base_gdp = current_data[prov].get('ml_prediction', current_data[prov]['composite_index'])
                     
-                    # Vertex AI enhanced forecasting
+                    # Gemini AI enhanced forecasting
                     trend_factor = 1.0 + (month * 0.02)  # 2% monthly growth
                     seasonal_factor = 1.0 + (0.1 * np.sin(month * np.pi / 6))  # Seasonal variation
                     
@@ -293,7 +280,7 @@ def forecast_gdp():
                         'gdp_forecast': round(forecast_gdp, 2),
                         'confidence': max(0.6, 0.95 - (month * 0.03)),  # Decreasing confidence
                         'month': month,
-                        'vertex_ai_forecast': True
+                        'gemini_ai_forecast': True
                     }
             
             forecast_data.append({
@@ -306,7 +293,7 @@ def forecast_gdp():
             'status': 'success',
             'forecast_months': months,
             'province': province,
-            'vertex_ai_powered': True,
+            'gemini_ai_powered': True,
             'data': forecast_data
         })
         

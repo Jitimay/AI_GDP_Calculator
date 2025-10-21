@@ -3,7 +3,7 @@
 Real-time AI platform that estimates Burundi's informal economy GDP using **Google Cloud Vertex AI** and **Elasticsearch** with multi-source data fusion.
 
 ## 🏆 Hackathon Compliance
-- ✅ **Google Cloud Vertex AI** - Enhanced ML predictions
+- ✅ **Google Cloud Gemini AI** - Enhanced ML predictions
 - ✅ **Elasticsearch** - Partner Challenge requirement  
 - ✅ **AI Innovation** - Real-time economic insights
 
@@ -28,7 +28,7 @@ pip install -r requirements.txt
 http://localhost:5000/health → Shows Google Cloud + Elasticsearch
 
 ### **2. Live Predictions** (30s)  
-http://localhost:8501 → Real-time GDP with Vertex AI
+http://localhost:8501 → Real-time GDP with Gemini AI
 
 ### **3. Search Feature** (30s)
 Dashboard Sidebar → Search provinces with Elasticsearch
@@ -38,7 +38,7 @@ Dashboard Sidebar → AI-powered forecasting
 
 ## 📊 Features
 
-- **Google Cloud Vertex AI** enhanced GDP predictions
+- **Google Cloud Gemini AI** enhanced GDP predictions
 - **Real-time GDP estimation** using 5 data sources
 - **Elasticsearch** for scalable search & analytics
 - **Interactive dashboard** with live charts
@@ -55,7 +55,7 @@ Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → 
 ## 🔧 Technology Stack
 
 ### **Google Cloud Integration**
-- **Vertex AI** - Enhanced ML predictions
+- **Gemini AI** - Enhanced ML predictions
 - **AI-powered insights** generation
 - **Confidence scoring** algorithms
 
@@ -67,7 +67,7 @@ Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → 
 ## 🔧 API Endpoints
 
 - `GET /health` - System health (includes Google Cloud status)
-- `GET /predict` - Real-time GDP predictions with Vertex AI
+- `GET /predict` - Real-time GDP predictions with Gemini AI
 - `GET /search` - Search province data in Elasticsearch
 - `GET /forecast` - 12-month AI forecasting
 - `GET /history` - Historical data analysis
@@ -82,7 +82,7 @@ Data Sources → Fusion Engine → Google Cloud Vertex AI → Elasticsearch → 
 
 ## 🤖 AI Enhancement
 
-**Google Cloud Vertex AI** provides:
+**Google Cloud Gemini AI** provides:
 - Enhanced prediction accuracy
 - Confidence scoring
 - AI-powered economic insights
